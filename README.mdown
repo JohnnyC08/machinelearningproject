@@ -1,10 +1,10 @@
 ## Practical Machine Learning Project
 
 # Goal
-The goal of the project is to utilize the Weight Lifting Exercise Dataset from http://groupware.les.inf.puc-rio.br/har in order to create a machine learning algorithm to rate the quality of a repetition of an activity. To put it more technically, we want to utilize the previously mentioned data set to create a machine learning model that can predict the "classe" variable. To the end we will discuss the decisions we made to clean the data, how we implement cross validaiton, and our estimated out of sample error rate.
+The goal of the project is to utilize the Weight Lifting Exercise Dataset from http://groupware.les.inf.puc-rio.br/har in order to create a machine learning algorithm to rate the quality of a repetition of an activity. To put it more technically, we want to utilize the previously mentioned data set to create a machine learning model that can predict the "classe" variable. To the end we will discuss the decisions we made to clean the data, how we implement cross validation, and our estimated out of sample error rate.
 
 ## Preliminaries
-We utilize the caret package and the doParallel package. We utilize the caret package to train our model and we utilize the doParallel package to distribute the model training accross all the cores on the machine generating the model. Finally, we set the seed to 4567 in order to allow the reader to generate the exact same results as the author. The code to accomplish the previous tasks is below.
+We utilize the caret package and the doParallel package. We utilize the caret package to train our model and we utilize the doParallel package to distribute the model training across all the cores on the machine generating the model. Finally, we set the seed to 4567 in order to allow the reader to generate the exact same results as the author. The code to accomplish the previous tasks is below.
 
 ```
 library(caret)
@@ -17,7 +17,7 @@ registerDoParallel(cl)
 ```
 
 ## Getting and Cleaning the Data
-Upon preliminary examination of the data set we notice that many values associated with kurtosis columns have a value of #DIV/0! which means when we load the data set we want to ensure the #DIV/0! values are set to NA. To ensure #DIV/0!, blanks, and "NA" all become NA we load the data utilizing the below function
+Upon preliminary examination of the data set we notice that many values associated with kurtosis columns have a value of #DIV/0! which means when we load the data set we want to ensure the #DIV/0! values are set to NA. To ensure #DIV/0!, blanks, and "NA" all become NA we load the data utilizing the function below
 ```
 getTrainingData <- function() {
   training <- read.csv("machinelearningproject/training.csv", header = T, na.strings = c("#DIV/0!", "", "NA"))

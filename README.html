@@ -866,12 +866,12 @@ body .markdown-body
 <h1>
 <a id="user-content-goal" class="anchor" href="#goal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goal</h1>
 
-<p>The goal of the project is to utilize the Weight Lifting Exercise Dataset from <a href="http://groupware.les.inf.puc-rio.br/har">http://groupware.les.inf.puc-rio.br/har</a> in order to create a machine learning algorithm to rate the quality of a repetition of an activity. To put it more technically, we want to utilize the previously mentioned data set to create a machine learning model that can predict the "classe" variable. To the end we will discuss the decisions we made to clean the data, how we implement cross validaiton, and our estimated out of sample error rate.</p>
+<p>The goal of the project is to utilize the Weight Lifting Exercise Dataset from <a href="http://groupware.les.inf.puc-rio.br/har">http://groupware.les.inf.puc-rio.br/har</a> in order to create a machine learning algorithm to rate the quality of a repetition of an activity. To put it more technically, we want to utilize the previously mentioned data set to create a machine learning model that can predict the "classe" variable. To the end we will discuss the decisions we made to clean the data, how we implement cross validation, and our estimated out of sample error rate.</p>
 
 <h2>
 <a id="user-content-preliminaries" class="anchor" href="#preliminaries" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Preliminaries</h2>
 
-<p>We utilize the caret package and the doParallel package. We utilize the caret package to train our model and we utilize the doParallel package to distribute the model training accross all the cores on the machine generating the model. Finally, we set the seed to 4567 in order to allow the reader to generate the exact same results as the author. The code to accomplish the previous tasks is below.</p>
+<p>We utilize the caret package and the doParallel package. We utilize the caret package to train our model and we utilize the doParallel package to distribute the model training across all the cores on the machine generating the model. Finally, we set the seed to 4567 in order to allow the reader to generate the exact same results as the author. The code to accomplish the previous tasks is below.</p>
 
 <pre><code>library(caret)
 library(doParallel)
@@ -885,7 +885,7 @@ registerDoParallel(cl)
 <h2>
 <a id="user-content-getting-and-cleaning-the-data" class="anchor" href="#getting-and-cleaning-the-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting and Cleaning the Data</h2>
 
-<p>Upon preliminary examination of the data set we notice that many values associated with kurtosis columns have a value of #DIV/0! which means when we load the data set we want to ensure the #DIV/0! values are set to NA. To ensure #DIV/0!, blanks, and "NA" all become NA we load the data utilizing the below function</p>
+<p>Upon preliminary examination of the data set we notice that many values associated with kurtosis columns have a value of #DIV/0! which means when we load the data set we want to ensure the #DIV/0! values are set to NA. To ensure #DIV/0!, blanks, and "NA" all become NA we load the data utilizing the function below</p>
 
 <pre><code>getTrainingData &lt;- function() {
   training &lt;- read.csv("machinelearningproject/training.csv", header = T, na.strings = c("#DIV/0!", "", "NA"))
