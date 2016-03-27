@@ -1,0 +1,96 @@
+## Practical Machine Learning Project
+
+# Goal
+The goal of the project is to utilize the Weight Lifting Exercise Dataset from http://groupware.les.inf.puc-rio.br/har in order to create a machine learning algorithm to rate the quality of a repetition of an activity. To put it more technically, we want to utilize the previously mentioned data set to create a machine learning model that can predict the "classe" variable. To the end we will discuss the decisions we made to clean the data, how we implement cross validaiton, and our estimated out of sample error rate.
+
+## Preliminaries
+We utilize the caret package and the doParallel package. We utilize the caret package to train our model and we utilize the doParallel package to distribute the model training accross all the cores on the machine generating the model. Finally, we set the seed to 4567 in order to allow the reader to generate the exact same results as the author. The code to accomplish the previous tasks is below.
+
+```
+library(caret)
+library(doParallel)
+
+set.seed(4567)
+
+cl <- makeCluster(detectCores()) 
+registerDoParallel(cl)
+```
+
+## Getting and Cleaning the Data
+Upon preliminary examination of the data set we notice that many values associated with kurtosis columns have a value of #DIV/0! which means when we load the data set we want to ensure the #DIV/0! values are set to NA. To ensure #DIV/0!, blanks, and "NA" all become NA we load the data utilizing the below function
+```
+getTrainingData <- function() {
+  training <- read.csv("machinelearningproject/training.csv", header = T, na.strings = c("#DIV/0!", "", "NA"))
+}
+```
+
+We further clean the data with the function below. After showing the function we will discuss why we cleaned the data the way we did.
+```
+cleanData <- function(dataToBeCleaned) {
+  hasNoNa <- apply(dataToBeCleaned, 2, function(column) { sum(is.na(column)) == 0 })
+  dataToBeCleaned <- dataToBeCleaned[, hasNoNa]
+  columnsToGetRidOf <- c("X", "user_name", "raw_timestamp_part_1","raw_timestamp_part_2", "cvtd_timestamp", "new_window", "num_window")
+  dataToBeCleaned <- dataToBeCleaned[,!(names(dataToBeCleaned) %in% columnsToGetRidOf)]
+}
+```
+We noticed the training data has many columns which are mostly filled with NA. We wish to filter out those columns we select only the columns without and NA values. Next, there are several columns that do not relate to the core data set so we will also remove those columns from the training set. Finally, the cleanData function accepts a data frame so that we can clean the test set the same way. After cleaning our data we are left with 53 columns of 19,622 variables.
+
+## Cross Validation
+We split our training data into 70% training data and 30% validation data with the commands below.
+```
+  training <- cleanData(getTrainingData())
+  inTraining <- createDataPartition(training$classe, p=.7, list=F)
+  
+  trainingSubset <- training[inTraining,]
+  trainingSubsetForValidation <- training[-inTraining,]
+```
+We decided to utilize the random forest model because we have many variables with unknown relationships to each other. Thus, we create a model with the function below.
+```
+createModel <- function(dataToFit) {
+  modelFit <- train(classe ~. , model="rf", data=dataToFit, prox=T)
+}
+```
+Once we generate our model we then generate a prediction on the validation set using the code below.
+```
+validationPrediction <- predict(modelFit, trainingSubsetForValidation)
+```
+
+Then we generate a confusion matrix with the below command.
+```
+confusionMatrix(validationPrediction, trainingSubsetForValidation$classe)
+```
+Which generates the following analysis.
+```
+Confusion Matrix and Statistics
+
+          Reference
+Prediction    A    B    C    D    E
+         A 1673    7    0    0    0
+         B    0 1128    6    1    0
+         C    1    4 1013   12    2
+         D    0    0    7  951    5
+         E    0    0    0    0 1075
+
+Overall Statistics
+                                          
+               Accuracy : 0.9924          
+                 95% CI : (0.9898, 0.9944)
+    No Information Rate : 0.2845          
+    P-Value [Acc > NIR] : < 2.2e-16       
+                                          
+                  Kappa : 0.9903          
+ Mcnemar's Test P-Value : NA              
+
+Statistics by Class:
+
+                     Class: A Class: B Class: C Class: D Class: E
+Sensitivity            0.9994   0.9903   0.9873   0.9865   0.9935
+Specificity            0.9983   0.9985   0.9961   0.9976   1.0000
+Pos Pred Value         0.9958   0.9938   0.9816   0.9875   1.0000
+Neg Pred Value         0.9998   0.9977   0.9973   0.9974   0.9985
+Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+Detection Rate         0.2843   0.1917   0.1721   0.1616   0.1827
+Detection Prevalence   0.2855   0.1929   0.1754   0.1636   0.1827
+Balanced Accuracy      0.9989   0.9944   0.9917   0.9920   0.9968
+```
+From the above analysis we see that the out of sample accuracy rate is 0.9924 which implies the estimated out of sample error rate of 0.0076.
